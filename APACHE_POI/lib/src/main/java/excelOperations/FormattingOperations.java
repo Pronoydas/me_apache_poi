@@ -2,12 +2,14 @@ package excelOperations;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import org.apache.poi.ss.usermodel.FillPatternType;
 import org.apache.poi.ss.usermodel.HorizontalAlignment;
 import org.apache.poi.ss.usermodel.IndexedColors;
 import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFCellStyle;
+import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
@@ -21,31 +23,48 @@ public class FormattingOperations {
 	 * @param data
 	 * @param rowIndex
 	 * @param colIndex
+	 * @throws FileNotFoundException
 	 */
 
 	public void applyColorToCell(String filePath, String sheetName, int rowIndex, int colIndex,
-			IndexedColors fillColor, FillPatternType fillPatternType) {
+			IndexedColors fillColor, FillPatternType fillPatternType) throws Exception {
 		/* Step - 1 : Creating file object of existing excel file */
+		File file = new File(filePath);
 
 		/* Step - 2 : Creating input stream */
+		FileInputStream fis = new FileInputStream(file);
 
 		/* Step - 3 : Creating workbook from input stream */
+		XSSFWorkbook xWorkbook = new XSSFWorkbook(fis);
 
 		/* Step - 4 : Reading first sheet of excel file */
+		XSSFSheet xSheet = xWorkbook.getSheet(sheetName);
 
 		/* Step - 5 : Get the Cell number using getRow and getCell */
+		int rowCount = xSheet.getLastRowNum();
+		int columnCount = xSheet.getRow(0).getLastCellNum();
+		XSSFCell xRow = xSheet.getRow(rowIndex).getCell(colIndex);
 
 		/* Step - 6 : Create the cell style sheet */
+		XSSFCellStyle xCellStyle=xWorkbook.createCellStyle();
 
 		/* Step - 7 : Set background color */
+		xCellStyle.setFillBackgroundColor(fillColor.getIndex());
 
 		/* Step - 8 : Set fill pattern */
+		xCellStyle.setFillPattern(fillPatternType);
 
 		/* Step - 9 : Apply the style to Cell */
-
+		
+		xRow.setCellStyle(xCellStyle);
 		/* Step - 10 : Close input stream */
+		fis.close();
 
 		/* Step - 11 : Creating output stream and writing the updated workbook */
+		FileOutputStream fos = new FileOutputStream(file);
+		xWorkbook.write(fos);
+		xWorkbook.close();
+		fos.close();
 
 		/* Step - 12 : Close the workbook and output stream */
 
@@ -167,9 +186,12 @@ public class FormattingOperations {
 		}
 	}
 	
-	public void run() {
+	public void run() throws Exception {
+		String filePath = System.getProperty("user.dir") + "/src/main/resources/Activity.xlsx";
+		String worksheetName = "Country Population";
 		// Call the desired methods
-
+      this.applyColorToCell(filePath, worksheetName, 1, 1, IndexedColors.BRIGHT_GREEN,
+	  FillPatternType.THICK_BACKWARD_DIAG);
 		/* Add your logic to make the formatting updates above this line */
 
 		// Utility method to verify formatting updates
